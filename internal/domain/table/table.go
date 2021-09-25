@@ -1,7 +1,7 @@
 package table
 
 import (
-	"github.com/foxfurry/go_dining_hall/internal/domain/dto"
+	"github.com/foxfurry/go_dining_hall/internal/dto"
 	"github.com/foxfurry/go_dining_hall/internal/infrastructure/table_helper"
 	"log"
 	"math/rand"
