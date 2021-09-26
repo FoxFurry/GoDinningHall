@@ -2,10 +2,13 @@ package application
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/foxfurry/go_dining_hall/internal/dto"
+	"github.com/foxfurry/go_dining_hall/internal/http/controller"
 	"github.com/foxfurry/go_dining_hall/internal/infrastructure/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"net"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -22,37 +25,55 @@ type dinningApp struct {
 func CreateApp() IApp {
 	appHandler := gin.New()
 
+	ctrl := controller.NewDiningController()
+	ctrl.RegisterDiningRouter(appHandler)
+
 	app := dinningApp{
 		server: &http.Server{
 			Addr:              viper.GetString("dinning_host"),
 			Handler:           appHandler,
 		},
 	}
+	count := app.initialize()
+	ctrl.Initialize(count)
 
 	return &app
 }
 
-func (d *dinningApp) initialize(){
-	timeOut := time.Second * 1
+func (d *dinningApp) initialize() int{
+	timeOut := time.Second * 5
 	kitchenHost := viper.GetString("kitchen_host")
-	var kitchenConn net.Conn
 	var err error
 	logger.LogMessageF("Trying to reach kitchenHost server on: %v", kitchenHost)
 
-	for {
-		kitchenConn, err = net.DialTimeout("tcp", kitchenHost, timeOut)
-		if err == nil {
-			break
-		}
-		logger.LogMessage("Could not reach kitchenHost, retrying")
+	connClient := http.Client{
+		Timeout: timeOut,
 	}
-	kitchenConn.Close()
+	_, err = connClient.Get(kitchenHost)
+	if err != nil {
+		logger.LogPanic(err.Error())
+	}
+
+	req, err := http.Get(kitchenHost + "/menu")
+	if err != nil {
+		logger.LogPanic(err.Error())
+	}
+	bodyData, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		logger.LogPanic(err.Error())
+	}
+	bodyMenu := dto.Menu{}
+
+	if err = json.Unmarshal(bodyData, &bodyMenu); err!= nil{
+		logger.LogPanic(err.Error())
+	}
 
 	logger.LogMessage("Successfully connected!")
+
+	return bodyMenu.ItemsCount
 }
 
 func (d *dinningApp) Start() {
-	d.initialize()
 	logger.LogMessage("Starting dinning hall server")
 
 	if err := d.server.ListenAndServe(); err != http.ErrServerClosed {
