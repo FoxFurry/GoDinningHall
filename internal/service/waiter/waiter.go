@@ -11,13 +11,13 @@ import (
 )
 
 type Waiter struct {
-	id int
+	id     int
 	tables []*table.Table
 }
 
-func NewWaiter(newID int, newTables[]*table.Table) Waiter {
+func NewWaiter(newID int, newTables []*table.Table) Waiter {
 	return Waiter{
-		id: newID,
+		id:     newID,
 		tables: newTables,
 	}
 }
@@ -36,7 +36,7 @@ func (w *Waiter) WatchTables() {
 
 				log.Printf("Waiter %v picked up an order from table %v", w.id, order.TableID)
 
-				http.Post(viper.GetString("kitchen_host") + "/order", contentType, bytes.NewReader(jsonBody))
+				http.Post(viper.GetString("kitchen_host")+"/order", contentType, bytes.NewReader(jsonBody))
 
 				time.Sleep(time.Second)
 			}

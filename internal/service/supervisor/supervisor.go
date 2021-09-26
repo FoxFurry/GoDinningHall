@@ -19,10 +19,10 @@ type ISupervisor interface {
 
 type DiningSupervisor struct {
 	tablesMutex sync.Mutex
-	tables []table.Table
+	tables      []table.Table
 
 	waitersMutex sync.Mutex
-	waiters []waiter.Waiter
+	waiters      []waiter.Waiter
 }
 
 func (s *DiningSupervisor) StartWaiters() {
@@ -31,7 +31,7 @@ func (s *DiningSupervisor) StartWaiters() {
 	}
 }
 
-func (s *DiningSupervisor) GenerateWaiter(num int){
+func (s *DiningSupervisor) GenerateWaiter(num int) {
 	tables := s.GetTablesPointer()
 	s.waiters = nil
 	for idx := 0; idx < num; idx++ {
@@ -42,13 +42,13 @@ func (s *DiningSupervisor) GenerateWaiter(num int){
 func (s *DiningSupervisor) GenerateTables(num int, menu int) {
 	s.tablesMutex.Lock()
 	s.tables = nil
-	for idx := 0; idx < num; idx++{
+	for idx := 0; idx < num; idx++ {
 		s.tables = append(s.tables, table.NewTable(menu, idx))
 	}
 	s.tablesMutex.Unlock()
 }
 
-func (s *DiningSupervisor) GetTables() []table.Table{
+func (s *DiningSupervisor) GetTables() []table.Table {
 	var tmp []table.Table
 	s.tablesMutex.Lock()
 	tmp = s.tables
@@ -64,7 +64,7 @@ func (s *DiningSupervisor) InitializeTables() {
 	s.tablesMutex.Unlock()
 }
 
-func (s *DiningSupervisor) GetTablesPointer() []*table.Table{
+func (s *DiningSupervisor) GetTablesPointer() []*table.Table {
 	var tmp []*table.Table
 	s.tablesMutex.Lock()
 	for idx, _ := range s.tables {
@@ -79,4 +79,3 @@ func (s *DiningSupervisor) FreeTable(idx int) {
 	s.tables[idx].SetFree()
 	s.tablesMutex.Unlock()
 }
-

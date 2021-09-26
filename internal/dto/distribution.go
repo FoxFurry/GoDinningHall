@@ -8,6 +8,6 @@ type cookingDetail struct {
 type Distribution struct {
 	Order
 
-	CookingTime int                `json:"cooking_time"`
+	CookingTime    int             `json:"cooking_time"`
 	CookingDetails []cookingDetail `json:"cooking_details"`
 }

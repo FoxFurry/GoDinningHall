@@ -11,15 +11,15 @@ import (
 
 type State int
 
-const(
+const (
 	NotReady State = iota
 	Ready
 	Waiting
 )
 
 const (
-	orderProbability = 0.15
-	maxFoodCount int = 6
+	orderProbability     = 0.15
+	maxFoodCount     int = 6
 )
 
 type Table struct {
@@ -40,7 +40,7 @@ type Table struct {
 
 func NewTable(newMenu int, newID int) Table {
 	return Table{
-		id: newID,
+		id:           newID,
 		menu:         newMenu,
 		currentState: NotReady,
 		currentOrder: &dto.Order{},
@@ -60,7 +60,7 @@ func (t *Table) SetMenu(newMenu int) {
 	t.menuMutex.Unlock()
 }
 
-func (t *Table) setState(newState State){
+func (t *Table) setState(newState State) {
 	t.currentStateMutex.Lock()
 	t.currentState = newState
 	t.currentStateMutex.Unlock()
@@ -108,7 +108,6 @@ func (t *Table) GenerateOrder() {
 	var menu = t.getMenu()
 	var count = rand.Intn(maxFoodCount)
 
-
 	for idx := 0; idx < count; idx++ {
 		t.pushFood(rand.Intn(menu))
 	}
@@ -121,14 +120,14 @@ func (t *Table) GenerateOrder() {
 	t.setState(Ready)
 }
 
-func (t *Table) Simulate(){
-	for{
+func (t *Table) Simulate() {
+	for {
 		switch t.GetState() {
 		case NotReady:
 			if table_helper.CoinFlip(orderProbability) {
 				t.GenerateOrder()
 				log.Printf("Table %v: Order generated: %v", t.id, t.GetCurrentOrder().Items)
-			}else{
+			} else {
 				//log.Printf("Table %v: Order not generated!", t.id)
 			}
 		case Ready:

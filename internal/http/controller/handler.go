@@ -27,7 +27,7 @@ func NewDiningController() IController {
 	return &DiningController{super: &supervisor.DiningSupervisor{}}
 }
 
-func (ctrl *DiningController) distribution(c *gin.Context){
+func (ctrl *DiningController) distribution(c *gin.Context) {
 	var data dto.Distribution
 
 	if err := c.ShouldBindJSON(&data); err != nil {

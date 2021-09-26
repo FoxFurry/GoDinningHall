@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func LoadConfig(){
+func LoadConfig() {
 	viper.SetConfigName("cfg")
 	viper.SetConfigType("json")
 	viper.AddConfigPath("./config")

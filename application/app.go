@@ -30,8 +30,8 @@ func CreateApp() IApp {
 
 	app := dinningApp{
 		server: &http.Server{
-			Addr:              viper.GetString("dinning_host"),
-			Handler:           appHandler,
+			Addr:    viper.GetString("dinning_host"),
+			Handler: appHandler,
 		},
 	}
 	count := app.initialize()
@@ -40,7 +40,7 @@ func CreateApp() IApp {
 	return &app
 }
 
-func (d *dinningApp) initialize() int{
+func (d *dinningApp) initialize() int {
 	timeOut := time.Second * 5
 	kitchenHost := viper.GetString("kitchen_host")
 	var err error
@@ -64,7 +64,7 @@ func (d *dinningApp) initialize() int{
 	}
 	bodyMenu := dto.Menu{}
 
-	if err = json.Unmarshal(bodyData, &bodyMenu); err!= nil{
+	if err = json.Unmarshal(bodyData, &bodyMenu); err != nil {
 		logger.LogPanic(err.Error())
 	}
 
