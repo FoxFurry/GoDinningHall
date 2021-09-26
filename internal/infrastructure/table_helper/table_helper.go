@@ -1,7 +1,6 @@
 package table_helper
 
 import (
-	"log"
 	"math/rand"
 )
 
@@ -14,7 +13,6 @@ func CoinFlip(probability float64) bool {
 
 	var rollChance = int(probability * 100)
 	var roll = rand.Intn(99) + 1
-	log.Printf("%v %v", roll, rollChance)
 
 	if roll <= rollChance {
 		return true
