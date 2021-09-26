@@ -18,11 +18,13 @@ const(
 )
 
 const (
-	orderProbability = 0.3
+	orderProbability = 0.15
 	maxFoodCount int = 6
 )
 
 type Table struct {
+	id int
+
 	menuMutex sync.Mutex
 	menu      int
 
@@ -36,8 +38,9 @@ type Table struct {
 	pickupTime      *time.Time
 }
 
-func NewTable(newMenu int) Table{
+func NewTable(newMenu int, newID int) Table {
 	return Table{
+		id: newID,
 		menu:         newMenu,
 		currentState: NotReady,
 		currentOrder: &dto.Order{},
@@ -71,7 +74,7 @@ func (t *Table) getMenu() int {
 	return tmp
 }
 
-func (t *Table) getState() State{
+func (t *Table) GetState() State {
 	var tmp State
 	t.currentStateMutex.Lock()
 	tmp = t.currentState
@@ -105,26 +108,44 @@ func (t *Table) GenerateOrder() {
 	var menu = t.getMenu()
 	var count = rand.Intn(maxFoodCount)
 
+
 	for idx := 0; idx < count; idx++ {
 		t.pushFood(rand.Intn(menu))
 	}
+
+	t.currentOrderMutex.Lock()
+	t.currentOrder.TableID = t.id
+	t.currentOrder.OrderID = rand.Intn(1000)
+	t.currentOrderMutex.Unlock()
+
 	t.setState(Ready)
 }
 
-func (t *Table) StartGenerator(){
+func (t *Table) Simulate(){
 	for{
-		switch t.getState() {
+		switch t.GetState() {
 		case NotReady:
 			if table_helper.CoinFlip(orderProbability) {
 				t.GenerateOrder()
-				log.Printf("Order generated: %+v", t.GetCurrentOrder())
+				log.Printf("Table %v: Order generated: %v", t.id, t.GetCurrentOrder().Items)
 			}else{
-				log.Printf("Order not generated!")
+				//log.Printf("Table %v: Order not generated!", t.id)
 			}
 		case Ready:
-			log.Printf("Waiting to be picked up")
+			log.Printf("Table %v: Waiting to be picked up", t.id)
 		}
 
 		time.Sleep(time.Second)
 	}
+}
+
+func (t *Table) PickUp() dto.Order {
+	t.setState(Waiting)
+	t.setPickupTime(time.Now())
+
+	return *t.GetCurrentOrder()
+}
+
+func (t *Table) SetFree() {
+	t.setState(NotReady)
 }
