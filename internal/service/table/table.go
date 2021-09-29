@@ -2,8 +2,8 @@ package table
 
 import (
 	"github.com/foxfurry/go_dining_hall/internal/dto"
+	"github.com/foxfurry/go_dining_hall/internal/infrastructure/logger"
 	"github.com/foxfurry/go_dining_hall/internal/infrastructure/table_helper"
-	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -106,7 +106,7 @@ func (t *Table) GetCurrentOrder() *dto.Order {
 
 func (t *Table) GenerateOrder() {
 	var menu = t.getMenu()
-	var count = rand.Intn(maxFoodCount)
+	var count = rand.Intn(maxFoodCount)+1
 
 	for idx := 0; idx < count; idx++ {
 		t.pushFood(rand.Intn(menu))
@@ -126,12 +126,12 @@ func (t *Table) Simulate() {
 		case NotReady:
 			if table_helper.CoinFlip(orderProbability) {
 				t.GenerateOrder()
-				log.Printf("Table %v: Order generated: %v", t.id, t.GetCurrentOrder().Items)
+				logger.LogTableF(t.id, "Order generated: %v", t.GetCurrentOrder().Items)
 			} else {
 				//log.Printf("Table %v: Order not generated!", t.id)
 			}
 		case Ready:
-			log.Printf("Table %v: Waiting to be picked up", t.id)
+			logger.LogTableF(t.id, "Waiting to be picked up")
 		}
 
 		time.Sleep(time.Second)

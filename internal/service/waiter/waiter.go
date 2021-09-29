@@ -3,6 +3,7 @@ package waiter
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/foxfurry/go_dining_hall/internal/infrastructure/logger"
 	"github.com/foxfurry/go_dining_hall/internal/service/table"
 	"github.com/spf13/viper"
 	"log"
@@ -34,7 +35,7 @@ func (w *Waiter) WatchTables() {
 				}
 				contentType := "application/json"
 
-				log.Printf("Waiter %v picked up an order from table %v", w.id, order.TableID)
+				logger.LogWaiterF(w.id, "Picked up an order from table %v", order.TableID)
 
 				http.Post(viper.GetString("kitchen_host")+"/order", contentType, bytes.NewReader(jsonBody))
 

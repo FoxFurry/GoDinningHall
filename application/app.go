@@ -23,7 +23,7 @@ type dinningApp struct {
 }
 
 func CreateApp() IApp {
-	appHandler := gin.New()
+	appHandler := gin.Default()
 
 	ctrl := controller.NewDiningController()
 	ctrl.RegisterDiningRouter(appHandler)
@@ -34,6 +34,7 @@ func CreateApp() IApp {
 			Handler: appHandler,
 		},
 	}
+
 	count := app.initialize()
 	ctrl.Initialize(count)
 
@@ -74,7 +75,7 @@ func (d *dinningApp) initialize() int {
 }
 
 func (d *dinningApp) Start() {
-	logger.LogMessage("Starting dinning hall server")
+	logger.LogMessage("Starting dinning hall server!")
 
 	if err := d.server.ListenAndServe(); err != http.ErrServerClosed {
 		logger.LogPanicF("Unexpected error while running server: %v", err)
