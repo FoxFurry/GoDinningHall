@@ -20,6 +20,8 @@ const (
 const (
 	orderProbability     = 0.15
 	maxFoodCount     int = 6
+
+	panicOnTimeout bool = true
 )
 
 type Table struct {
@@ -33,9 +35,7 @@ type Table struct {
 
 	currentOrderMutex sync.Mutex
 	currentOrder      *dto.Order
-
-	pickupTimeMutex sync.Mutex
-	pickupTime      *time.Time
+	currentOrderWait int
 }
 
 func NewTable(newMenu int, newID int) Table {
@@ -44,7 +44,6 @@ func NewTable(newMenu int, newID int) Table {
 		menu:         newMenu,
 		currentState: NotReady,
 		currentOrder: &dto.Order{},
-		pickupTime:   nil,
 	}
 }
 
@@ -82,20 +81,6 @@ func (t *Table) GetState() State {
 	return tmp
 }
 
-func (t *Table) getPickupTime() *time.Time {
-	var tmp *time.Time
-	t.pickupTimeMutex.Lock()
-	tmp = t.pickupTime
-	t.pickupTimeMutex.Unlock()
-	return tmp
-}
-
-func (t *Table) setPickupTime(newTime time.Time) {
-	t.pickupTimeMutex.Lock()
-	t.pickupTime = &newTime
-	t.pickupTimeMutex.Unlock()
-}
-
 func (t *Table) GetCurrentOrder() *dto.Order {
 	var tmp *dto.Order
 	t.currentOrderMutex.Lock()
@@ -109,12 +94,14 @@ func (t *Table) GenerateOrder() {
 	var count = rand.Intn(maxFoodCount)+1
 
 	for idx := 0; idx < count; idx++ {
-		t.pushFood(rand.Intn(menu))
+		food := rand.Intn(menu)
+		t.pushFood(food)
 	}
 
 	t.currentOrderMutex.Lock()
 	t.currentOrder.TableID = t.id
 	t.currentOrder.OrderID = rand.Intn(1000)
+	t.currentOrder.MaxWait = 100					// TODO: Add full menu and max wait calculation
 	t.currentOrderMutex.Unlock()
 
 	t.setState(Ready)
@@ -131,17 +118,27 @@ func (t *Table) Simulate() {
 				//log.Printf("Table %v: Order not generated!", t.id)
 			}
 		case Ready:
-			logger.LogTableF(t.id, "Waiting to be picked up")
-		}
+			logger.LogTable(t.id, "Waiting to be picked up")
 
+		case Waiting:
+			t.currentOrderWait++
+
+			if t.currentOrderWait >= t.GetCurrentOrder().MaxWait {
+				logger.LogTable(t.id, "Time is out!")
+
+				if panicOnTimeout {
+					logger.LogPanic("Wait time is out!")
+				}
+
+			}
+		}
 		time.Sleep(time.Second)
 	}
 }
 
 func (t *Table) PickUp() dto.Order {
 	t.setState(Waiting)
-	t.setPickupTime(time.Now())
-
+	t.currentOrderWait = 0
 	return *t.GetCurrentOrder()
 }
 

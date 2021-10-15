@@ -35,6 +35,9 @@ func (ctrl *DiningController) distribution(c *gin.Context) {
 	if err := c.ShouldBindJSON(&data); err != nil {
 		log.Panic(err)
 	}
+
 	logger.LogWaiterF(data.WaiterID, "Table %d was served!", data.TableID)
 	ctrl.super.FreeTable(data.TableID)
+
+	c.Status(200)
 }
